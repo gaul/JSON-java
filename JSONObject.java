@@ -1575,7 +1575,10 @@ public class JSONObject {
         char initial = string.charAt(0);
         if ((initial >= '0' && initial <= '9') || initial == '-') {
             try {
-                if (string.indexOf('.') > -1 || string.indexOf('e') > -1
+                if (string.endsWith("0")) {
+                    // return custom type to avoid truncating zeros
+                    return new MyDouble(string);
+                } else if (string.indexOf('.') > -1 || string.indexOf('e') > -1
                         || string.indexOf('E') > -1
                         || "-0".equals(string)) {
                     Double d = Double.valueOf(string);
@@ -1595,6 +1598,13 @@ public class JSONObject {
             }
         }
         return string;
+    }
+
+    static class MyDouble {
+        String s;
+        MyDouble(String s) {
+            this.s = s;
+        }
     }
 
     /**
@@ -1868,6 +1878,8 @@ public class JSONObject {
             new JSONArray(coll).write(writer, indentFactor, indent);
         } else if (value.getClass().isArray()) {
             new JSONArray(value).write(writer, indentFactor, indent);
+        } else if (value instanceof MyDouble) {
+            quote(((MyDouble) value).s, writer);
         } else {
             quote(value.toString(), writer);
         }
